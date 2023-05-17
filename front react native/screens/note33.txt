@@ -1,0 +1,2817 @@
+import React,{ useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  Button,
+  Alert,
+  ImageBackground,
+} from 'react-native';
+import { Icon,SocialIcon } from 'react-native-elements';
+import axios from 'axios';
+import Voice from '@react-native-voice/voice';
+import Sound from 'react-native-sound';
+
+export default function Login({navigation}) {
+  const [value, setValue] = useState('');
+  const [email, setInputValue2] = useState('');
+  const [password, setInputValue5] = useState('');
+  const [error, setError] = useState(null);
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const verif=() =>{
+    axios.get(`https://8815-197-4-171-110.eu.ngrok.io/api/login?email=${email}&password=${password}`)
+    .then((res)=>{
+      console.log(res.data)
+      if (res.data == 'Invalid'){
+      Alert.alert('Alert Title', 'invalide mail or password', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    else if(res.data=='verified'){
+      navigation.replace('Home');
+    }
+    else{
+      Alert.alert('Alert', 'error', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    })
+  }
+  const ajouterpass = (text)=>{
+    setInputValue5(text);
+  }
+  const ajouteremail = (text)=>{
+    if (emailRegex.test(text)) {
+    setInputValue2(text);
+    setError(null);
+    }
+    else {
+      setInputValue2(text);
+      setError('Addresse email invalid');
+    }
+  }
+  const [isRecording, setIsRecording] = useState(false);
+  const sound = new Sound('son1.m4a', Sound.MAIN_BUNDLE, (error) => {
+    if (error) {
+      console.log('Erreur lors du chargement du fichier audio : ', error);
+    } else {
+      console.log('Fichier audio chargé avec succès.');
+    }
+  });
+  const startRecording = async () => {
+    setIsRecording(true);
+
+    try {
+      await Voice.start('en-US');
+      sound.play();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  Voice.onSpeechResults = (event) => {
+    const recognizedText = event.value[0];
+    const log="";
+    const pass="";
+    console.log('recognized text:', recognizedText);
+
+
+    if (recognizedText.toLowerCase() === 'register') {
+      navigation.replace('Register');
+    }
+    const mots = recognizedText.split(" ");
+    /*log=mots[0];
+    pass=mots[1];*/
+    console.log(mots[0]);
+    console.log(mots[1]);
+  };
+  return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <View style={styles.bigCircle}></View>
+        <View style={styles.smallCircle}></View>
+        <View style={styles.centerizedView}>
+
+        <View style={styles.authBox}>
+            <ImageBackground style={styles.logoBox} source={{uri:'https://img.freepik.com/vecteurs-premium/logo-quiz-icone-bulle-dialogue_149152-811.jpg?w=2000'}}>
+            </ImageBackground>
+            <Text style={styles.loginTitleText}>Login</Text>
+            <View style={styles.hr}></View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                keyboardType='email-address'
+                textContentType='emailAddress'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouteremail}
+                value={email}
+              />
+            {error && <Text style={
+              {
+                color: 'red',
+                marginTop: 10,
+              }
+            }>{error}</Text>}
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                secureTextEntry={true}
+                textContentType='password'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouterpass}
+                value={password}
+              />
+            
+            </View>
+            <TouchableOpacity style={styles.loginButton} onPress={verif}/*onPress={()=> navigation.replace('Home'/*,{nomprofil: "value" })}*/>
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <View>
+              <TouchableOpacity
+                title={isRecording ? 'Enregistrement en cours...' : 'Commencer l\'enregistrement'}
+                onPress={isRecording ? stopRecording : startRecording}
+                disabled={isRecording}
+              >
+              <Image
+                style={{
+                  width:40,
+                  height:40,
+                  left:110,
+                  bottom:-5
+                }}
+                source={require('./micro.png')}
+              />
+              </TouchableOpacity>
+            </View>
+            <Text style={{fontSize: 25}}>----------------Or----------------</Text>
+            <View>
+              <TouchableOpacity>
+              <SocialIcon
+                title='Sign In With Facebook'
+                button
+                type='facebook'
+              />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={()=> navigation.replace('Register')}>
+              <Text style={styles.registerText}>
+                Don't have an account? Register Now
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  centerizedView: {
+    width: '100%',
+    top: '15%',
+  },
+  authBox: {
+    width: '80%',
+    backgroundColor: '#fafafa',
+    borderRadius: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoBox: {
+    width: 140,
+    height: 100,
+    backgroundColor: '#eb4d4b',
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -50,
+    marginBottom: -50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  loginTitleText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  hr: {
+    width: '100%',
+    height: 0.5,
+    backgroundColor: '#444',
+    marginTop: 6,
+  },
+  inputBox: {
+    marginTop: 10,
+  },
+  inputLabel: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+    width:195
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  forgotPasswordText: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 16,
+  },
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React, { useState, useEffect } from 'react';
+import { View, Button } from 'react-native';
+import Sound from 'react-native-sound';
+
+const Login = () => {
+  const [sound, setSound] = useState(null);
+
+  useEffect(() => {
+    // Charge le fichier audio en utilisant require() et le chemin relatif du fichier audio
+    setSound(new Sound(require('./son1.m4a'), Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('Erreur lors du chargement du fichier audio', error);
+      }
+    }));
+  }, []);
+
+  const playSound = () => {
+    if (sound !== null) { // Vérifie si sound n'est pas nul avant d'appeler la méthode play()
+      sound.play((success) => {
+        if (!success) {
+          console.log('Erreur lors de la lecture du fichier audio');
+        }
+      });
+    }
+  }
+
+  return (
+    <View>
+      <Button title="Jouer le son" onPress={playSound} />
+    </View>
+  );
+}
+
+export default Login;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React,{ useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  Button,
+  Alert,
+  ImageBackground,
+} from 'react-native';
+import { Icon,SocialIcon } from 'react-native-elements';
+import axios from 'axios';
+import Voice from '@react-native-voice/voice';
+
+export default function Login({navigation}) {
+  const [value, setValue] = useState('');
+  const [email, setInputValue2] = useState('');
+  const [password, setInputValue5] = useState('');
+  const [error, setError] = useState(null);
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const verif=() =>{
+    axios.get(`https://8815-197-4-171-110.eu.ngrok.io/api/login?email=${email}&password=${password}`)
+    .then((res)=>{
+      console.log(res.data)
+      if (res.data == 'Invalid'){
+      Alert.alert('Alert Title', 'invalide mail or password', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    else if(res.data=='verified'){
+      navigation.replace('Home');
+    }
+    else{
+      Alert.alert('Alert', 'error', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    })
+  }
+  const ajouterpass = (text)=>{
+    setInputValue5(text);
+  }
+  const ajouteremail = (text)=>{
+    if (emailRegex.test(text)) {
+    setInputValue2(text);
+    setError(null);
+    }
+    else {
+      setInputValue2(text);
+      setError('Addresse email invalid');
+    }
+  }
+  const [isRecording, setIsRecording] = useState(false);
+
+  const startRecording = async () => {
+    setIsRecording(true);
+
+    try {
+      await Voice.start('en-US');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  Voice.onSpeechResults = (event) => {
+    const recognizedText = event.value[0];
+    const log="";
+    const pass="";
+    console.log('recognized text:', recognizedText);
+
+
+    if (recognizedText.toLowerCase() === 'register') {
+      navigation.replace('Register');
+    }
+    const mots = recognizedText.split(" ");
+    /*log=mots[0];
+    pass=mots[1];*/
+    console.log(mots[0]);
+    console.log(mots[1]);
+  };
+  return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <View style={styles.bigCircle}></View>
+        <View style={styles.smallCircle}></View>
+        <View style={styles.centerizedView}>
+
+        <View style={styles.authBox}>
+            <ImageBackground style={styles.logoBox} source={{uri:'https://img.freepik.com/vecteurs-premium/logo-quiz-icone-bulle-dialogue_149152-811.jpg?w=2000'}}>
+            </ImageBackground>
+            <Text style={styles.loginTitleText}>Login</Text>
+            <View style={styles.hr}></View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                keyboardType='email-address'
+                textContentType='emailAddress'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouteremail}
+                value={email}
+              />
+            {error && <Text style={
+              {
+                color: 'red',
+                marginTop: 10,
+              }
+            }>{error}</Text>}
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                secureTextEntry={true}
+                textContentType='password'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouterpass}
+                value={password}
+              />
+            
+            </View>
+            <TouchableOpacity style={styles.loginButton} onPress={verif}/*onPress={()=> navigation.replace('Home'/*,{nomprofil: "value" })}*/>
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <View>
+              <TouchableOpacity
+                title={isRecording ? 'Enregistrement en cours...' : 'Commencer l\'enregistrement'}
+                onPress={isRecording ? stopRecording : startRecording}
+                disabled={isRecording}
+              >
+              <Image
+                style={{
+                  width:40,
+                  height:40,
+                  left:110,
+                  bottom:-5
+                }}
+                source={require('./micro.png')}
+              />
+              </TouchableOpacity>
+            </View>
+            <Text style={{fontSize: 25}}>----------------Or----------------</Text>
+            <View>
+              <TouchableOpacity>
+              <SocialIcon
+                title='Sign In With Facebook'
+                button
+                type='facebook'
+              />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={()=> navigation.replace('Register')}>
+              <Text style={styles.registerText}>
+                Don't have an account? Register Now
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  centerizedView: {
+    width: '100%',
+    top: '15%',
+  },
+  authBox: {
+    width: '80%',
+    backgroundColor: '#fafafa',
+    borderRadius: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoBox: {
+    width: 140,
+    height: 100,
+    backgroundColor: '#eb4d4b',
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -50,
+    marginBottom: -50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  loginTitleText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  hr: {
+    width: '100%',
+    height: 0.5,
+    backgroundColor: '#444',
+    marginTop: 6,
+  },
+  inputBox: {
+    marginTop: 10,
+  },
+  inputLabel: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+    width:195
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  forgotPasswordText: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 16,
+  },
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React, { useState, useEffect } from 'react';
+//import { useRoute } from '@react-navigation/native';
+//import ProgressBar from 'react-native-progress/Bar';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  StatusBar,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+  Dimensions,
+
+  FlatList, 
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { WebView } from 'react-native-webview';
+
+import {
+  Avatar,
+  Title,
+  Caption,
+  TouchableRipple,
+} from 'react-native-paper';
+//import { Icon } from 'react-native-elements';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Animated } from 'react-native-reanimated';
+
+function TabA({navigation}) {
+      //const data=[];
+      //const [data, setData] = useState();
+
+      apihandler=()=>{
+        const url = "https://c988-196-229-246-88.eu.ngrok.io/api/competences"
+        fetch(url).then((res)=>res.json())
+        .then((resJson)=>{
+                const data =resJson;
+                const noms = data[0].map(objet => objet.nom);
+                console.log(noms);
+              })
+        }
+      return (
+          <View style={{flex: 1,}}>
+
+            <TouchableOpacity style={styles.loginButton} onPress={()=> navigation.replace('Login')}>
+              <Text style={styles.loginButtonText}>Déconnecter</Text>
+            </TouchableOpacity>  
+          </View>
+      )    
+}
+function TabB({navigation}) {
+  const data = ['Java', 'J2EE', 'Python']
+      const _data = data.sort()
+      let finalData = [];
+      let stickeyIndex = []
+      _data.forEach((name, i) => {
+          if (i == 0 || name.substr(0, 1) != _data[i - 1].substr(0, 1)) {
+              stickeyIndex.push(i + stickeyIndex.length);
+              finalData.push({ id: i.toString() + 'head', name: name.substr(0, 1), type: 'head' })
+          }
+          finalData.push({ id: i.toString() + 'name', name, type: 'name' })
+      })
+      return (
+          <View style={{flex: 1,}}>
+              <FlatList
+                  data={finalData}
+                  keyExtractor={(item) => item.id}
+                  stickyHeaderIndices={stickeyIndex}
+                  renderItem={({ item }) => (
+                      <View style={item.type == 'name' ? {padding: 20,paddingVertical: 20,backgroundColor: '#eee',borderColor: '#fff'} : {padding: 20,paddingVertical: 10,backgroundColor: '#fff',elevation: 2}}>
+                          <TouchableOpacity onPress={()=> navigation.replace('Certificat',{nom: item.name})}><Text style={item.type == 'name' ? {fontSize: 18} : {fontSize: 20,fontWeight: 'bold'}}>{item.name}</Text></TouchableOpacity>
+                      </View>
+                  )}
+              />
+              
+          </View>
+      )   
+}
+
+function TabC() {
+  const html = `
+  <script src="https://kit.fontawesome.com/b99e675b6e.js"></script>
+
+  <div class="resume">
+     <div class="resume_left">
+       <div class="resume_profile">
+         <img src="https://i.imgur.com/eCijVBe.png" alt="profile_pic">
+       </div>
+       <div class="resume_content">
+         <div class="resume_item resume_info">
+           <div class="title">
+             <p class="bold">stephen colbert</p>
+             <p class="regular">Designer</p>
+           </div>
+           <ul>
+             <li>
+               <div class="icon">
+                 <i class="fas fa-map-signs"></i>
+               </div>
+               <div class="data">
+                 21 Street, Texas <br /> USA
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fas fa-mobile-alt"></i>
+               </div>
+               <div class="data">
+                 +324 4445678
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fas fa-envelope"></i>
+               </div>
+               <div class="data">
+                 stephen@gmail.com
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-weebly"></i>
+               </div>
+               <div class="data">
+                 www.stephen.com
+               </div>
+             </li>
+           </ul>
+         </div>
+         <div class="resume_item resume_skills">
+           <div class="title">
+             <p class="bold">skill's</p>
+           </div>
+           <ul>
+             <li>
+               <div class="skill_name">
+                 HTML
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 80%;"></span>
+               </div>
+               <div class="skill_per">80%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 CSS
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 70%;"></span>
+               </div>
+               <div class="skill_per">70%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 SASS
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 90%;"></span>
+               </div>
+               <div class="skill_per">90%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 JS
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 60%;"></span>
+               </div>
+               <div class="skill_per">60%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 JQUERY
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 88%;"></span>
+               </div>
+               <div class="skill_per">88%</div>
+             </li>
+           </ul>
+         </div>
+         <div class="resume_item resume_social">
+           <div class="title">
+             <p class="bold">Social</p>
+           </div>
+           <ul>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-facebook-square"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Facebook</p>
+                 <p>Stephen@facebook</p>
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-twitter-square"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Twitter</p>
+                 <p>Stephen@twitter</p>
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-youtube"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Youtube</p>
+                 <p>Stephen@youtube</p>
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-linkedin"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Linkedin</p>
+                 <p>Stephen@linkedin</p>
+               </div>
+             </li>
+           </ul>
+         </div>
+       </div>
+    </div>
+    <div class="resume_right">
+      <div class="resume_item resume_about">
+          <div class="title">
+             <p class="bold">About us</p>
+           </div>
+          <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Perspiciatis illo fugit officiis distinctio culpa officia totam atque exercitationem inventore repudiandae?</p>
+      </div>
+      <div class="resume_item resume_work">
+          <div class="title">
+             <p class="bold">Work Experience</p>
+           </div>
+          <ul>
+              <li>
+                  <div class="date">2013 - 2015</div> 
+                  <div class="info">
+                       <p class="semi-bold">Lorem ipsum dolor sit amet.</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+              <li>
+                <div class="date">2015 - 2017</div>
+                <div class="info">
+                       <p class="semi-bold">Lorem ipsum dolor sit amet.</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+              <li>
+                <div class="date">2017 - Present</div>
+                <div class="info">
+                       <p class="semi-bold">Lorem ipsum dolor sit amet.</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+          </ul>
+      </div>
+      <div class="resume_item resume_education">
+        <div class="title">
+             <p class="bold">Education</p>
+           </div>
+        <ul>
+              <li>
+                  <div class="date">2010 - 2013</div> 
+                  <div class="info">
+                       <p class="semi-bold">Web Designing (Texas University)</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+              <li>
+                <div class="date">2000 - 2010</div>
+                <div class="info">
+                       <p class="semi-bold">Texas International School</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+          </ul>
+      </div>
+      <div class="resume_item resume_hobby">
+        <div class="title">
+             <p class="bold">Hobby</p>
+           </div>
+         <ul>
+           <li><i class="fas fa-book"></i></li>
+           <li><i class="fas fa-gamepad"></i></li>
+           <li><i class="fas fa-music"></i></li>
+           <li><i class="fab fa-pagelines"></i></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <style>
+  @import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+  font-family: "Montserrat", sans-serif;
+}
+
+body {
+  background: #585c68;
+  font-size: 14px;
+  line-height: 22px;
+  color: #555555;
+}
+
+.bold {
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.semi-bold {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.resume {
+  width: 800px;
+  height: auto;
+  display: flex;
+  margin: 50px auto;
+}
+
+.resume .resume_left {
+  width: 280px;
+  background: #0bb5f4;
+}
+
+.resume .resume_left .resume_profile {
+  width: 100%;
+  height: 280px;
+}
+
+.resume .resume_left .resume_profile img {
+  width: 100%;
+  height: 100%;
+}
+
+.resume .resume_left .resume_content {
+  padding: 0 25px;
+}
+
+.resume .title {
+  margin-bottom: 20px;
+}
+
+.resume .resume_left .bold {
+  color: #fff;
+}
+
+.resume .resume_left .regular {
+  color: #b1eaff;
+}
+
+.resume .resume_item {
+  padding: 25px 0;
+  border-bottom: 2px solid #b1eaff;
+}
+
+.resume .resume_left .resume_item:last-child,
+.resume .resume_right .resume_item:last-child {
+  border-bottom: 0px;
+}
+
+.resume .resume_left ul li {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.resume .resume_left ul li:last-child {
+  margin-bottom: 0;
+}
+
+.resume .resume_left ul li .icon {
+  width: 35px;
+  height: 35px;
+  background: #fff;
+  color: #0bb5f4;
+  border-radius: 50%;
+  margin-right: 15px;
+  font-size: 16px;
+  position: relative;
+}
+
+.resume .icon i,
+.resume .resume_right .resume_hobby ul li i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.resume .resume_left ul li .data {
+  color: #b1eaff;
+}
+
+.resume .resume_left .resume_skills ul li {
+  display: flex;
+  margin-bottom: 10px;
+  color: #b1eaff;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resume .resume_left .resume_skills ul li .skill_name {
+  width: 25%;
+}
+
+.resume .resume_left .resume_skills ul li .skill_progress {
+  width: 60%;
+  margin: 0 5px;
+  height: 5px;
+  background: #009fd9;
+  position: relative;
+}
+
+.resume .resume_left .resume_skills ul li .skill_per {
+  width: 15%;
+}
+
+.resume .resume_left .resume_skills ul li .skill_progress span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #fff;
+}
+
+.resume .resume_left .resume_social .semi-bold {
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.resume .resume_right {
+  width: 520px;
+  background: #fff;
+  padding: 25px;
+}
+
+.resume .resume_right .bold {
+  color: #0bb5f4;
+}
+
+.resume .resume_right .resume_work ul,
+.resume .resume_right .resume_education ul {
+  padding-left: 40px;
+  overflow: hidden;
+}
+
+.resume .resume_right ul li {
+  position: relative;
+}
+
+.resume .resume_right ul li .date {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.resume .resume_right ul li .info {
+  margin-bottom: 20px;
+}
+
+.resume .resume_right ul li:last-child .info {
+  margin-bottom: 0;
+}
+
+.resume .resume_right .resume_work ul li:before,
+.resume .resume_right .resume_education ul li:before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: -25px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 2px solid #0bb5f4;
+}
+
+.resume .resume_right .resume_work ul li:after,
+.resume .resume_right .resume_education ul li:after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: -21px;
+  width: 2px;
+  height: 115px;
+  background: #0bb5f4;
+}
+
+.resume .resume_right .resume_hobby ul {
+  display: flex;
+  justify-content: space-between;
+}
+
+.resume .resume_right .resume_hobby ul li {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #0bb5f4;
+  border-radius: 50%;
+  position: relative;
+  color: #0bb5f4;
+}
+
+.resume .resume_right .resume_hobby ul li i {
+  font-size: 30px;
+}
+
+.resume .resume_right .resume_hobby ul li:before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  right: -52px;
+  width: 50px;
+  height: 2px;
+  background: #0bb5f4;
+}
+
+.resume .resume_right .resume_hobby ul li:last-child:before {
+  display: none;
+}
+
+  </style>
+  `;
+
+  return (
+    <WebView
+      source={{ html }}
+    />
+  );
+}
+
+
+const Tab = createBottomTabNavigator();
+
+export default function ReactNavigationBottomTabs({navigation, route }) {
+  return (
+    <Tab.Navigator
+      tabBarOptions={
+        {
+          // Default Color is blue you can change it by following props
+          // activeTintColor: '#ff4757',
+          // inactiveTintColor: '#ff6b81',
+          // Default Background Color is white you can change it by following props
+          // activeBackgroundColor: '#ced6e0',
+          // inactiveBackgroundColor: '#ced6e0',
+        }
+      }
+    >
+      <Tab.Screen
+        name='Acceuil'
+        component={TabA}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name='home' color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name='Certificat'
+        component={TabB}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name='message' color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name='CV'
+        component={TabC}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name='person' color={color} size={size} />
+          ),
+        }}
+      />
+  
+    </Tab.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    width:140,
+    borderRadius: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  recipient: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  body: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  footer: {
+    borderTopWidth: 1,
+    borderTopColor: '#CCCCCC',
+    paddingTop: 20,
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#999999',
+  },
+  userInfoSection: {
+    paddingHorizontal: 30,
+    marginBottom: 25,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  caption: {
+    fontSize: 14,
+    lineHeight: 14,
+    fontWeight: '500',
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  infoBoxWrapper: {
+    borderBottomColor: '#dddddd',
+    borderBottomWidth: 1,
+    borderTopColor: '#dddddd',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    height: 100,
+  },
+  infoBox: {
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuWrapper: {
+    marginTop: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+  },
+  menuItemText: {
+    color: '#777777',
+    marginLeft: 20,
+    fontWeight: '600',
+    fontSize: 16,
+    lineHeight: 26,
+  },
+});
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+import React, { useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  StatusBar,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
+import { Icon } from 'react-native-elements';
+import axios from 'axios';
+
+export default function SearchScreen1() {
+  const [searchText, setSearchText] = useState('');
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  useEffect(() => {
+    StatusBar.setBarStyle('dark-content', false);
+    axios.get('https://randomuser.me/api/?results=150').then(({ data }) => {
+      setUsers(data.results);
+    });
+  }, []);
+  return (
+    <View style={{ flex: 1, paddingTop: 40 }}>
+      <View style={styles.container}>
+        <View style={styles.searchView}>
+          <View style={styles.inputView}>
+            <TextInput
+              defaultValue={searchText}
+              style={styles.input}
+              placeholder='Search'
+              textContentType='name'
+              onChangeText={(text) => {
+                setSearchText(text);
+                if (text === '') {
+                  return setFilteredUsers([]);
+                }
+                const filtered_users = users.filter((user) =>
+                  user.name.first.toLowerCase().startsWith(text.toLowerCase())
+                );
+                setFilteredUsers(filtered_users);
+              }}
+              returnKeyType='search'
+            />
+            {searchText.length === 0 ? (
+              <TouchableOpacity>
+                <Icon name='search' size={24} color='#333' />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchText('');
+                  setFilteredUsers([]);
+                }}
+              >
+                <Icon name='cancel' size={24} color='#333' />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        {filteredUsers.length > 0 ? (
+          <ScrollView>
+            {filteredUsers.map((user) => (
+              <TouchableOpacity
+                style={styles.userCard}
+                onPress={() => {
+                  Alert.alert(
+                    `${user.name.first} ${user.name.last}`,
+                    `You can call me at ${user.phone}`
+                  );
+                }}
+              >
+                <Image
+                  style={styles.userImage}
+                  source={{ uri: user.picture?.large }}
+                />
+                <View style={styles.userCardRight}>
+                  <Text
+                    style={{ fontSize: 18, fontWeight: '500' }}
+                  >{`${user.name.first} ${user.name.last}`}</Text>
+                  <Text>{`${user?.phone}`}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+            <View style={{ height: 50 }}></View>
+          </ScrollView>
+        ) : searchText.length > 0 ? (
+          <View style={styles.messageBox}>
+            <Text style={styles.messageBoxText}>No user found</Text>
+          </View>
+        ) : (
+          <View style={styles.messageBox}>
+            <Text style={styles.messageBoxText}>Search for users</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+  },
+  searchView: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  inputView: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    fontSize: 18,
+  },
+  userCard: {
+    backgroundColor: '#fafafa',
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    marginTop: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 100,
+  },
+  userCardRight: {
+    paddingHorizontal: 10,
+  },
+  messageBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  messageBoxText: {
+    fontSize: 20,
+    fontWeight: '500',
+  },
+});
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+import React, { useState, useEffect } from 'react';
+//import { useRoute } from '@react-navigation/native';
+//import ProgressBar from 'react-native-progress/Bar';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  StatusBar,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+  Dimensions,
+
+  FlatList, 
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { WebView } from 'react-native-webview';
+
+import {
+  Avatar,
+  Title,
+  Caption,
+  TouchableRipple,
+} from 'react-native-paper';
+//import { Icon } from 'react-native-elements';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Animated } from 'react-native-reanimated';
+
+function TabA({navigation}) {
+      //const data=[];
+      //const [data, setData] = useState();
+        const [noms, setNoms] = useState([]);
+
+        useEffect(() => {
+          const url = "https://29c8-196-229-246-88.eu.ngrok.io/api/competences"
+          fetch(url).then((res)=>res.json())
+          .then((resJson)=>{
+                  //alert(JSON.stringify(resJson))
+                  data=resJson;
+                  const nomsExtrac = data[0].map(objet => objet.nom);
+                  setNoms(nomsExtrac);
+                })
+        }, []);
+      return (
+          <View style={{flex: 1,}}>
+            {
+              <View>
+                {noms.map((nom, index) => (
+                  <Text key={index}>{nom}</Text>
+                ))}
+              </View>
+            }
+            <TouchableOpacity style={styles.loginButton} onPress={()=> navigation.replace('Login')}>
+              <Text style={styles.loginButtonText}>Déconnecter</Text>
+            </TouchableOpacity>  
+          </View>
+      )    
+}
+function TabB({navigation}) {
+  const data = ['Java', 'J2EE', 'Python']
+      const _data = data.sort()
+      let finalData = [];
+      let stickeyIndex = []
+      _data.forEach((name, i) => {
+          if (i == 0 || name.substr(0, 1) != _data[i - 1].substr(0, 1)) {
+              stickeyIndex.push(i + stickeyIndex.length);
+              finalData.push({ id: i.toString() + 'head', name: name.substr(0, 1), type: 'head' })
+          }
+          finalData.push({ id: i.toString() + 'name', name, type: 'name' })
+      })
+      return (
+          <View style={{flex: 1,}}>
+              <FlatList
+                  data={finalData}
+                  keyExtractor={(item) => item.id}
+                  stickyHeaderIndices={stickeyIndex}
+                  renderItem={({ item }) => (
+                      <View style={item.type == 'name' ? {padding: 20,paddingVertical: 20,backgroundColor: '#eee',borderColor: '#fff'} : {padding: 20,paddingVertical: 10,backgroundColor: '#fff',elevation: 2}}>
+                          <TouchableOpacity onPress={()=> navigation.replace('Certificat',{nom: item.name})}><Text style={item.type == 'name' ? {fontSize: 18} : {fontSize: 20,fontWeight: 'bold'}}>{item.name}</Text></TouchableOpacity>
+                      </View>
+                  )}
+              />
+              
+          </View>
+      )   
+}
+
+function TabC() {
+  const html = `
+  <script src="https://kit.fontawesome.com/b99e675b6e.js"></script>
+
+  <div class="resume">
+     <div class="resume_left">
+       <div class="resume_profile">
+         <img src="https://i.imgur.com/eCijVBe.png" alt="profile_pic">
+       </div>
+       <div class="resume_content">
+         <div class="resume_item resume_info">
+           <div class="title">
+             <p class="bold">stephen colbert</p>
+             <p class="regular">Designer</p>
+           </div>
+           <ul>
+             <li>
+               <div class="icon">
+                 <i class="fas fa-map-signs"></i>
+               </div>
+               <div class="data">
+                 21 Street, Texas <br /> USA
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fas fa-mobile-alt"></i>
+               </div>
+               <div class="data">
+                 +324 4445678
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fas fa-envelope"></i>
+               </div>
+               <div class="data">
+                 stephen@gmail.com
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-weebly"></i>
+               </div>
+               <div class="data">
+                 www.stephen.com
+               </div>
+             </li>
+           </ul>
+         </div>
+         <div class="resume_item resume_skills">
+           <div class="title">
+             <p class="bold">skill's</p>
+           </div>
+           <ul>
+             <li>
+               <div class="skill_name">
+                 HTML
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 80%;"></span>
+               </div>
+               <div class="skill_per">80%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 CSS
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 70%;"></span>
+               </div>
+               <div class="skill_per">70%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 SASS
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 90%;"></span>
+               </div>
+               <div class="skill_per">90%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 JS
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 60%;"></span>
+               </div>
+               <div class="skill_per">60%</div>
+             </li>
+             <li>
+               <div class="skill_name">
+                 JQUERY
+               </div>
+               <div class="skill_progress">
+                 <span style="width: 88%;"></span>
+               </div>
+               <div class="skill_per">88%</div>
+             </li>
+           </ul>
+         </div>
+         <div class="resume_item resume_social">
+           <div class="title">
+             <p class="bold">Social</p>
+           </div>
+           <ul>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-facebook-square"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Facebook</p>
+                 <p>Stephen@facebook</p>
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-twitter-square"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Twitter</p>
+                 <p>Stephen@twitter</p>
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-youtube"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Youtube</p>
+                 <p>Stephen@youtube</p>
+               </div>
+             </li>
+             <li>
+               <div class="icon">
+                 <i class="fab fa-linkedin"></i>
+               </div>
+               <div class="data">
+                 <p class="semi-bold">Linkedin</p>
+                 <p>Stephen@linkedin</p>
+               </div>
+             </li>
+           </ul>
+         </div>
+       </div>
+    </div>
+    <div class="resume_right">
+      <div class="resume_item resume_about">
+          <div class="title">
+             <p class="bold">About us</p>
+           </div>
+          <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Perspiciatis illo fugit officiis distinctio culpa officia totam atque exercitationem inventore repudiandae?</p>
+      </div>
+      <div class="resume_item resume_work">
+          <div class="title">
+             <p class="bold">Work Experience</p>
+           </div>
+          <ul>
+              <li>
+                  <div class="date">2013 - 2015</div> 
+                  <div class="info">
+                       <p class="semi-bold">Lorem ipsum dolor sit amet.</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+              <li>
+                <div class="date">2015 - 2017</div>
+                <div class="info">
+                       <p class="semi-bold">Lorem ipsum dolor sit amet.</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+              <li>
+                <div class="date">2017 - Present</div>
+                <div class="info">
+                       <p class="semi-bold">Lorem ipsum dolor sit amet.</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+          </ul>
+      </div>
+      <div class="resume_item resume_education">
+        <div class="title">
+             <p class="bold">Education</p>
+           </div>
+        <ul>
+              <li>
+                  <div class="date">2010 - 2013</div> 
+                  <div class="info">
+                       <p class="semi-bold">Web Designing (Texas University)</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+              <li>
+                <div class="date">2000 - 2010</div>
+                <div class="info">
+                       <p class="semi-bold">Texas International School</p> 
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum, voluptatibus!</p>
+                  </div>
+              </li>
+          </ul>
+      </div>
+      <div class="resume_item resume_hobby">
+        <div class="title">
+             <p class="bold">Hobby</p>
+           </div>
+         <ul>
+           <li><i class="fas fa-book"></i></li>
+           <li><i class="fas fa-gamepad"></i></li>
+           <li><i class="fas fa-music"></i></li>
+           <li><i class="fab fa-pagelines"></i></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <style>
+  @import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+  font-family: "Montserrat", sans-serif;
+}
+
+body {
+  background: #585c68;
+  font-size: 14px;
+  line-height: 22px;
+  color: #555555;
+}
+
+.bold {
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.semi-bold {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.resume {
+  width: 800px;
+  height: auto;
+  display: flex;
+  margin: 50px auto;
+}
+
+.resume .resume_left {
+  width: 280px;
+  background: #0bb5f4;
+}
+
+.resume .resume_left .resume_profile {
+  width: 100%;
+  height: 280px;
+}
+
+.resume .resume_left .resume_profile img {
+  width: 100%;
+  height: 100%;
+}
+
+.resume .resume_left .resume_content {
+  padding: 0 25px;
+}
+
+.resume .title {
+  margin-bottom: 20px;
+}
+
+.resume .resume_left .bold {
+  color: #fff;
+}
+
+.resume .resume_left .regular {
+  color: #b1eaff;
+}
+
+.resume .resume_item {
+  padding: 25px 0;
+  border-bottom: 2px solid #b1eaff;
+}
+
+.resume .resume_left .resume_item:last-child,
+.resume .resume_right .resume_item:last-child {
+  border-bottom: 0px;
+}
+
+.resume .resume_left ul li {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.resume .resume_left ul li:last-child {
+  margin-bottom: 0;
+}
+
+.resume .resume_left ul li .icon {
+  width: 35px;
+  height: 35px;
+  background: #fff;
+  color: #0bb5f4;
+  border-radius: 50%;
+  margin-right: 15px;
+  font-size: 16px;
+  position: relative;
+}
+
+.resume .icon i,
+.resume .resume_right .resume_hobby ul li i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.resume .resume_left ul li .data {
+  color: #b1eaff;
+}
+
+.resume .resume_left .resume_skills ul li {
+  display: flex;
+  margin-bottom: 10px;
+  color: #b1eaff;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resume .resume_left .resume_skills ul li .skill_name {
+  width: 25%;
+}
+
+.resume .resume_left .resume_skills ul li .skill_progress {
+  width: 60%;
+  margin: 0 5px;
+  height: 5px;
+  background: #009fd9;
+  position: relative;
+}
+
+.resume .resume_left .resume_skills ul li .skill_per {
+  width: 15%;
+}
+
+.resume .resume_left .resume_skills ul li .skill_progress span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #fff;
+}
+
+.resume .resume_left .resume_social .semi-bold {
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.resume .resume_right {
+  width: 520px;
+  background: #fff;
+  padding: 25px;
+}
+
+.resume .resume_right .bold {
+  color: #0bb5f4;
+}
+
+.resume .resume_right .resume_work ul,
+.resume .resume_right .resume_education ul {
+  padding-left: 40px;
+  overflow: hidden;
+}
+
+.resume .resume_right ul li {
+  position: relative;
+}
+
+.resume .resume_right ul li .date {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.resume .resume_right ul li .info {
+  margin-bottom: 20px;
+}
+
+.resume .resume_right ul li:last-child .info {
+  margin-bottom: 0;
+}
+
+.resume .resume_right .resume_work ul li:before,
+.resume .resume_right .resume_education ul li:before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: -25px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 2px solid #0bb5f4;
+}
+
+.resume .resume_right .resume_work ul li:after,
+.resume .resume_right .resume_education ul li:after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: -21px;
+  width: 2px;
+  height: 115px;
+  background: #0bb5f4;
+}
+
+.resume .resume_right .resume_hobby ul {
+  display: flex;
+  justify-content: space-between;
+}
+
+.resume .resume_right .resume_hobby ul li {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #0bb5f4;
+  border-radius: 50%;
+  position: relative;
+  color: #0bb5f4;
+}
+
+.resume .resume_right .resume_hobby ul li i {
+  font-size: 30px;
+}
+
+.resume .resume_right .resume_hobby ul li:before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  right: -52px;
+  width: 50px;
+  height: 2px;
+  background: #0bb5f4;
+}
+
+.resume .resume_right .resume_hobby ul li:last-child:before {
+  display: none;
+}
+
+  </style>
+  `;
+
+  return (
+    <WebView
+      source={{ html }}
+    />
+  );
+}
+
+
+const Tab = createBottomTabNavigator();
+
+export default function ReactNavigationBottomTabs({navigation, route }) {
+  return (
+    <Tab.Navigator
+      tabBarOptions={
+        {
+          // Default Color is blue you can change it by following props
+          // activeTintColor: '#ff4757',
+          // inactiveTintColor: '#ff6b81',
+          // Default Background Color is white you can change it by following props
+          // activeBackgroundColor: '#ced6e0',
+          // inactiveBackgroundColor: '#ced6e0',
+        }
+      }
+    >
+      <Tab.Screen
+        name='Acceuil'
+        component={TabA}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name='home' color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name='Certificat'
+        component={TabB}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name='message' color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name='CV'
+        component={TabC}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name='person' color={color} size={size} />
+          ),
+        }}
+      />
+  
+    </Tab.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    width:140,
+    borderRadius: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  recipient: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  body: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  footer: {
+    borderTopWidth: 1,
+    borderTopColor: '#CCCCCC',
+    paddingTop: 20,
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#999999',
+  },
+  userInfoSection: {
+    paddingHorizontal: 30,
+    marginBottom: 25,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  caption: {
+    fontSize: 14,
+    lineHeight: 14,
+    fontWeight: '500',
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  infoBoxWrapper: {
+    borderBottomColor: '#dddddd',
+    borderBottomWidth: 1,
+    borderTopColor: '#dddddd',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    height: 100,
+  },
+  infoBox: {
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuWrapper: {
+    marginTop: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+  },
+  menuItemText: {
+    color: '#777777',
+    marginLeft: 20,
+    fontWeight: '600',
+    fontSize: 16,
+    lineHeight: 26,
+  },
+});
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+import React, { useState, useEffect } from 'react';
+import { Button, Text } from 'react-native';
+import Voice from '@react-native-voice/voice';
+import { GoogleSpeechRecognizer } from 'react-native-google-speech';
+
+const Login = () => {
+  const [recognized, setRecognized] = useState('');
+  const [started, setStarted] = useState('');
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    Voice.onSpeechStart = onSpeechStart;
+    Voice.onSpeechRecognized = onSpeechRecognized;
+    Voice.onSpeechResults = onSpeechResults;
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const onSpeechStart = (e) => {
+    console.log('onSpeechStart: ', e);
+    setStarted('√');
+  };
+
+  const onSpeechRecognized = (e) => {
+    console.log('onSpeechRecognized: ', e);
+    setRecognized('√');
+  };
+
+  const onSpeechResults = async (e) => {
+    console.log('onSpeechResults: ', e);
+    setResults(e.value);
+
+    const recognizer = new GoogleSpeechRecognizer('<YOUR_API_KEY>');
+
+    try {
+      const transcription = await recognizer.transcribe(e.value[0]);
+      console.log('Transcription:', transcription);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const startRecording = async () => {
+    setRecognized('');
+    setStarted('');
+    setResults([]);
+
+    try {
+      await Voice.start('en-US');
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      await Voice.stop();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  return (
+    <View>
+      <Button title="Start Recording" onPress={startRecording} />
+      <Button title="Stop Recording" onPress={stopRecording} />
+      <Text>Recognized: {recognized}</Text>
+      <Text>Started: {started}</Text>
+      <Text>Results:</Text>
+      {results.map((result, index) => (
+        <Text key={index}>{result}</Text>
+      ))}
+    </View>
+  );
+};
+
+export default Login;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+import React,{ useState,useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  Button,
+  Alert,
+  ImageBackground,
+} from 'react-native';
+import { Icon,SocialIcon } from 'react-native-elements';
+import axios from 'axios';
+import Voice from '@react-native-voice/voice';
+import Sound from 'react-native-sound';
+
+export default function Login({navigation}) {
+  const [value, setValue] = useState('');
+  const [email, setInputValue2] = useState('');
+  const [password, setInputValue5] = useState('');
+  const [error, setError] = useState(null);
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const verif=() =>{
+    axios.get(`https://8815-197-4-171-110.eu.ngrok.io/api/login?email=${email}&password=${password}`)
+    .then((res)=>{
+      console.log(res.data)
+      if (res.data == 'Invalid'){
+      Alert.alert('Alert Title', 'invalide mail or password', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    else if(res.data=='verified'){
+      navigation.replace('Home');
+    }
+    else{
+      Alert.alert('Alert', 'error', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    })
+  }
+  const ajouterpass = (text)=>{
+    setInputValue5(text);
+  }
+  const ajouteremail = (text)=>{
+    if (emailRegex.test(text)) {
+    setInputValue2(text);
+    setError(null);
+    }
+    else {
+      setInputValue2(text);
+      setError('Addresse email invalid');
+    }
+  }
+  const [isRecording, setIsRecording] = useState(false);
+  const startRecording = async () => {
+    setIsRecording(true);
+
+    try {
+      await Voice.start('en-US');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  Voice.onSpeechResults = (event) => {
+    const recognizedText = event.value[0];
+    const log="";
+    const pass="";
+    console.log('recognized text:', recognizedText);
+    const mots = recognizedText.split(" ");
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'register') {
+        navigation.replace('Register');
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'at') {
+        mots[i]="@";
+      }
+    }
+    /*log=mots[0];
+    pass=mots[1];*/
+    console.log(mots[0]);
+    console.log(mots[1]);
+  };
+  const [sound, setSound] = useState(null);
+
+  useEffect(() => {
+    // Charge le fichier audio en utilisant require() et le chemin relatif du fichier audio
+    setSound(new Sound(require('./son1.m4a'), Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('Erreur lors du chargement du fichier audio', error);
+      }
+    }));
+  }, []);
+
+  const playSound = () => {
+    if (sound !== null) { // Vérifie si sound n'est pas nul avant d'appeler la méthode play()
+      sound.play((success) => {
+        if (!success) {
+          console.log('Erreur lors de la lecture du fichier audio');
+        }
+      });
+    }
+  }
+  const handlePress = () => {
+    playSound();
+    setTimeout(startRecording, 11500); // Attendre 2 secondes avant d'exécuter functionTwo
+  };
+  return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <View style={styles.bigCircle}></View>
+        <View style={styles.smallCircle}></View>
+        <View style={styles.centerizedView}>
+
+        <View style={styles.authBox}>
+            <ImageBackground style={styles.logoBox} source={{uri:'https://img.freepik.com/vecteurs-premium/logo-quiz-icone-bulle-dialogue_149152-811.jpg?w=2000'}}>
+            </ImageBackground>
+            <Text style={styles.loginTitleText}>Login</Text>
+            <View style={styles.hr}></View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                keyboardType='email-address'
+                textContentType='emailAddress'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouteremail}
+                value={email}
+              />
+            {error && <Text style={
+              {
+                color: 'red',
+                marginTop: 10,
+              }
+            }>{error}</Text>}
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                secureTextEntry={true}
+                textContentType='password'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouterpass}
+                value={password}
+              />
+            
+            </View>
+            <TouchableOpacity style={styles.loginButton} onPress={()=> navigation.replace('Home')}/*onPress={verif} onPress={()=> navigation.replace('Home'/*,{nomprofil: "value" })}*/>
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <View>
+              <TouchableOpacity
+                title={isRecording ? 'Enregistrement en cours...' : 'Commencer l\'enregistrement'}
+                onPress={handlePress}
+                disabled={isRecording}
+              >
+              <Image
+                style={{
+                  width:40,
+                  height:40,
+                  left:110,
+                  bottom:-5
+                }}
+                source={require('./micro.png')}
+              />
+              </TouchableOpacity>
+            </View>
+            <Text style={{fontSize: 25}}>----------------Or----------------</Text>
+            <View>
+              <TouchableOpacity>
+              <SocialIcon
+                title='Sign In With Facebook'
+                button
+                type='facebook'
+              />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={()=> navigation.replace('Register')}>
+              <Text style={styles.registerText}>
+                Don't have an account? Register Now
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  centerizedView: {
+    width: '100%',
+    top: '15%',
+  },
+  authBox: {
+    width: '80%',
+    backgroundColor: '#fafafa',
+    borderRadius: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoBox: {
+    width: 140,
+    height: 100,
+    backgroundColor: '#eb4d4b',
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -50,
+    marginBottom: -50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  loginTitleText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  hr: {
+    width: '100%',
+    height: 0.5,
+    backgroundColor: '#444',
+    marginTop: 6,
+  },
+  inputBox: {
+    marginTop: 10,
+  },
+  inputLabel: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  forgotPasswordText: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 16,
+  },
+});
+==============================================================================================================================================================================================================================

@@ -1,0 +1,715 @@
+import React,{ useState,useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  Button,
+  Alert,
+  ImageBackground,
+} from 'react-native';
+import { Icon,SocialIcon } from 'react-native-elements';
+import axios from 'axios';
+import Voice from '@react-native-voice/voice';
+import Sound from 'react-native-sound';
+
+export default function Login({navigation}) {
+  const [value, setValue] = useState('');
+  const [email, setInputValue2] = useState('');
+  const [password, setInputValue5] = useState('');
+  const [error, setError] = useState(null);
+  const [log1, setLog1] = useState('');
+
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const verif=() =>{
+    axios.get(`https://85a0-196-237-119-169.eu.ngrok.io/api/login?email=${email}&password=${password}`)
+    .then((res)=>{
+      console.log(res.data)
+      if (res.data == 'Invalid'){
+      Alert.alert('Alert Title', 'invalide mail or password', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    else if(res.data=='verified'){
+      navigation.replace('Home');
+    }
+    else{
+      Alert.alert('Alert', 'error', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    })
+  }
+  const ajouterpass = (text)=>{
+    setInputValue5(text);
+  }
+  const ajouteremail = (text)=>{
+    if (emailRegex.test(text)) {
+    setInputValue2(text);
+    setError(null);
+    }
+    else {
+      setInputValue2(text);
+      setError('Addresse email invalid');
+    }
+  }
+  const [isRecording, setIsRecording] = useState(false);
+  const startRecording = async () => {
+    setIsRecording(true);
+
+    try {
+      await Voice.start('fr-FR');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  Voice.onSpeechResults = (event) => {
+    const recognizedText = event.value[0];
+    //const pass="";
+    console.log('recognized text:', recognizedText);
+    const mots = recognizedText.split(" ");
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'register'||mots[i] === 'enregistrer') {
+        navigation.replace('Register');
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'alt') {
+        mots[i]="@";
+      }
+    }
+    let login22 = '';
+    for (let i = 0; i < mots.length; i++) {
+      login22=login22+mots[i]
+      ajouteremail(login22)
+      if ((mots[i]=="gmail.com" || mots[i]=="yahoo.com" || mots[i]=="yahoo.fr")){
+        login22=login22+mots[i]
+        break;  
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if ((mots[i]=="gmail.com" || mots[i]=="yahoo.com" || mots[i]=="yahoo.fr")){
+        ajouterpass(mots[i+1])
+        break;
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'valider') {
+        verif();
+        break;
+      }
+    }
+  };
+
+  const [sound, setSound] = useState(null);
+
+  useEffect(() => {
+    // Charge le fichier audio en utilisant require() et le chemin relatif du fichier audio
+    setSound(new Sound(require('./son1.m4a'), Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('Erreur lors du chargement du fichier audio', error);
+      }
+    }));
+  }, []);
+
+  const playSound = () => {
+    if (sound !== null) { // Vérifie si sound n'est pas nul avant d'appeler la méthode play()
+      sound.play((success) => {
+        if (!success) {
+          console.log('Erreur lors de la lecture du fichier audio');
+        }
+      });
+    }
+  }
+  const handlePress = () => {
+    playSound();
+    setTimeout(startRecording, 11500); // Attendre 2 secondes avant d'exécuter functionTwo
+  };
+  return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <View style={styles.bigCircle}></View>
+        <View style={styles.smallCircle}></View>
+        <View style={styles.centerizedView}>
+
+        <View style={styles.authBox}>
+            <ImageBackground style={styles.logoBox} source={{uri:'https://img.freepik.com/vecteurs-premium/logo-quiz-icone-bulle-dialogue_149152-811.jpg?w=2000'}}>
+            </ImageBackground>
+            <Text style={styles.loginTitleText}>Login</Text>
+            <View style={styles.hr}></View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                keyboardType='email-address'
+                textContentType='emailAddress'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouteremail}
+                //onChangeText={setInputValue2}
+                value={email}
+              />
+            {error && <Text style={
+              {
+                color: 'red',
+                marginTop: 10,
+              }
+            }>{error}</Text>}
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                secureTextEntry={true}
+                textContentType='password'
+                placeholder="Entrez votre mot de passe"
+                onChangeText={ajouterpass}
+                value={password}
+              />
+            
+            </View>
+            <TouchableOpacity style={styles.loginButton} onPress={verif} /*onPress={()=> navigation.replace('Home'/*,{nomprofil: "value" })}*/>
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <View>
+              <TouchableOpacity
+                title={isRecording ? 'Enregistrement en cours...' : 'Commencer l\'enregistrement'}
+                onPress={handlePress}
+                disabled={isRecording}
+              >
+              <Image
+                style={{
+                  width:40,
+                  height:40,
+                  left:110,
+                  bottom:-5
+                }}
+                source={require('./micro.png')}
+              />
+              </TouchableOpacity>
+            </View>
+            <Text style={{fontSize: 25}}>----------------Or----------------</Text>
+            <View>
+              <TouchableOpacity>
+              <SocialIcon
+                title='Sign In With Facebook'
+                button
+                type='facebook'
+              />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={()=> navigation.replace('Register')}>
+              <Text style={styles.registerText}>
+                Don't have an account? Register Now
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  centerizedView: {
+    width: '100%',
+    top: '15%',
+  },
+  authBox: {
+    width: '80%',
+    backgroundColor: '#fafafa',
+    borderRadius: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoBox: {
+    width: 140,
+    height: 100,
+    backgroundColor: '#eb4d4b',
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -50,
+    marginBottom: -50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  loginTitleText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  hr: {
+    width: '100%',
+    height: 0.5,
+    backgroundColor: '#444',
+    marginTop: 6,
+  },
+  inputBox: {
+    marginTop: 10,
+  },
+  inputLabel: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  forgotPasswordText: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 16,
+  },
+});
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+import React,{ useState,useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  Button,
+  Alert,
+  ImageBackground,
+} from 'react-native';
+import { Icon,SocialIcon } from 'react-native-elements';
+import axios from 'axios';
+import Voice from '@react-native-voice/voice';
+import Sound from 'react-native-sound';
+import { GoogleSigninButton } from 'react-native-google-signin';
+
+export default function Login({navigation}) {
+  const [value, setValue] = useState('');
+  const [email, setInputValue2] = useState('');
+  const [password, setInputValue5] = useState('');
+  const [error, setError] = useState(null);
+  const [log1, setLog1] = useState('');
+
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const verif=() =>{
+    axios.get(`https://85a0-196-237-119-169.eu.ngrok.io/api/login?email=${email}&password=${password}`)
+    .then((res)=>{
+      console.log(res.data)
+      if (res.data == 'Invalid'){
+      Alert.alert('Alert Title', 'invalide mail or password', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    else if(res.data=='verified'){
+      navigation.replace('Home');
+    }
+    else{
+      Alert.alert('Alert', 'error', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ]);
+    }
+    })
+  }
+  const ajouterpass = (text)=>{
+    setInputValue5(text);
+  }
+  const ajouteremail = (text)=>{
+    if (emailRegex.test(text)) {
+    setInputValue2(text);
+    setError(null);
+    }
+    else {
+      setInputValue2(text);
+      setError('Addresse email invalid');
+    }
+  }
+  const [isRecording, setIsRecording] = useState(false);
+  const startRecording = async () => {
+    setIsRecording(true);
+
+    try {
+      await Voice.start('fr-FR');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  Voice.onSpeechResults = (event) => {
+    const recognizedText = event.value[0];
+    //const pass="";
+    console.log('recognized text:', recognizedText);
+    const mots = recognizedText.split(" ");
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'register'||mots[i] === 'enregistrer') {
+        navigation.replace('Register');
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'alt') {
+        mots[i]="@";
+      }
+    }
+    let login22 = '';
+    for (let i = 0; i < mots.length; i++) {
+      login22=login22+mots[i]
+      ajouteremail(login22)
+      if ((mots[i]=="gmail.com" || mots[i]=="yahoo.com" || mots[i]=="yahoo.fr")){
+        login22=login22+mots[i]
+        break;  
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if ((mots[i]=="gmail.com" || mots[i]=="yahoo.com" || mots[i]=="yahoo.fr")){
+        ajouterpass(mots[i+1])
+        break;
+      }
+    }
+    for (let i = 0; i < mots.length; i++) {
+      if (mots[i] === 'valider') {
+        verif();
+        break;
+      }
+    }
+  };
+
+  const [sound, setSound] = useState(null);
+
+  useEffect(() => {
+    // Charge le fichier audio en utilisant require() et le chemin relatif du fichier audio
+    setSound(new Sound(require('./son1.m4a'), Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('Erreur lors du chargement du fichier audio', error);
+      }
+    }));
+  }, []);
+
+  const playSound = () => {
+    if (sound !== null) { // Vérifie si sound n'est pas nul avant d'appeler la méthode play()
+      sound.play((success) => {
+        if (!success) {
+          console.log('Erreur lors de la lecture du fichier audio');
+        }
+      });
+    }
+  }
+  const handlePress = () => {
+    playSound();
+    setTimeout(startRecording, 11500); // Attendre 2 secondes avant d'exécuter functionTwo
+  };
+  return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <View style={styles.bigCircle}></View>
+        <View style={styles.smallCircle}></View>
+        <View style={styles.centerizedView}>
+
+        <View style={styles.authBox}>
+            <ImageBackground style={styles.logoBox} source={{uri:'https://img.freepik.com/vecteurs-premium/logo-quiz-icone-bulle-dialogue_149152-811.jpg?w=2000'}}>
+            </ImageBackground>
+            <Text style={styles.loginTitleText}>Login</Text>
+            <View style={styles.hr}></View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                keyboardType='email-address'
+                textContentType='emailAddress'
+                placeholder="Entrez votre Email"
+                onChangeText={ajouteremail}
+                //onChangeText={setInputValue2}
+                value={email}
+              />
+            {error && <Text style={
+              {
+                color: 'red',
+                marginTop: 10,
+              }
+            }>{error}</Text>}
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                //autoCapitalize={false}
+                secureTextEntry={true}
+                textContentType='password'
+                placeholder="Entrez votre mot de passe"
+                onChangeText={ajouterpass}
+                value={password}
+              />
+            
+            </View>
+            <TouchableOpacity style={styles.loginButton} onPress={verif} /*onPress={()=> navigation.replace('Home'/*,{nomprofil: "value" })}*/>
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <View>
+              <TouchableOpacity
+                title={isRecording ? 'Enregistrement en cours...' : 'Commencer l\'enregistrement'}
+                onPress={handlePress}
+                disabled={isRecording}
+              >
+              <Image
+                style={{
+                  width:40,
+                  height:40,
+                  left:110,
+                  bottom:-5
+                }}
+                source={require('./micro.png')}
+              />
+              </TouchableOpacity>
+            </View>
+            <Text style={{fontSize: 25}}>----------------Or----------------</Text>
+            <View>
+              <TouchableOpacity>
+              <GoogleSigninButton
+                style={{ width: 260, height: 50 }}
+                size={GoogleSigninButton.Size.Wide}
+                color={GoogleSigninButton.Color.Light}
+                //onPress={signIn}
+                //disabled={isSigninInProgress}
+              />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={()=> navigation.replace('Register')}>
+              <Text style={styles.registerText}>
+                Don't have an account? Register Now
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  centerizedView: {
+    width: '100%',
+    top: '15%',
+  },
+  authBox: {
+    width: '80%',
+    backgroundColor: '#fafafa',
+    borderRadius: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoBox: {
+    width: 140,
+    height: 100,
+    backgroundColor: '#eb4d4b',
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -50,
+    marginBottom: -50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  loginTitleText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  hr: {
+    width: '100%',
+    height: 0.5,
+    backgroundColor: '#444',
+    marginTop: 6,
+  },
+  inputBox: {
+    marginTop: 10,
+  },
+  inputLabel: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  forgotPasswordText: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 16,
+  },
+});

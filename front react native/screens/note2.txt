@@ -1,0 +1,335 @@
+import React,{useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  ImageBackground,
+} from 'react-native';
+import { Icon,SocialIcon } from 'react-native-elements';
+import axios from 'axios';
+
+export default function Login({navigation}) {
+  const [nom, setInputValue] = useState('');
+  const [prenom, setInputValue1] = useState('');
+  const [email, setInputValue2] = useState('');
+  const [telephone, setInputValue3] = useState('');
+  const [education, setInputValue4] = useState('');
+  const [password, setInputValue5] = useState('');
+  const [experience, setInputValue6] = useState('');
+  const [skills, setInputValue7] = useState('');
+  const [social, setInputValue8] = useState('');
+  const [login, setInputValue9] = useState('');
+  const [description, setInputValue10] = useState('');
+  const ajouternom = (text)=>{
+    setInputValue(text);
+  }
+  const ajouterprenom = (text)=>{
+    setInputValue1(text);
+  }
+  const ajouteremail = (text)=>{
+    setInputValue2(text);
+  }
+  const ajoutertel = (text)=>{
+    setInputValue3(text);
+  }
+  const ajoutereduc = (text)=>{
+    setInputValue4(text);
+  }
+  const ajouterpass = (text)=>{
+    setInputValue5(text);
+  }
+  const ajouterexp = (text)=>{
+    setInputValue6(text);
+  }
+  const ajouterskil = (text)=>{
+    setInputValue7(text);
+  }
+  const ajoutersoc = (text)=>{
+    setInputValue8(text);
+  }
+  const ajouterlog = (text)=>{
+    setInputValue9(text);
+  }
+  const ajouterdesc = (text)=>{
+    setInputValue10(text);
+  }
+  const Enregistrer=() =>{
+    axios.post(`http://127.0.0.1:8000/api/useer?nom=${nom}&prenom=${prenom}&telephone=${telephone}&education=${education}&experience=${experience}&skills=${skills}&social=${social}&email=${email}&login=${login}&password=${password}&description=${description}`)
+  .then((res)=>{
+    console.log(res.data)
+    alert('registration terminated')
+  })
+  }
+  return (
+    <ScrollView>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <View style={styles.bigCircle}></View>
+        <View style={styles.smallCircle}></View>
+        <View style={styles.centerizedView}>
+
+        <View style={styles.authBox}>
+            <ImageBackground style={styles.logoBox} source={{uri:'https://img.freepik.com/vecteurs-premium/logo-quiz-icone-bulle-dialogue_149152-811.jpg?w=2000'}}>
+            </ImageBackground>
+            <Text style={styles.loginTitleText}>Sign Up</Text>
+            <View style={styles.hr}></View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Nom : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez votre nom"
+                onChangeText={ajouternom}
+                value={nom}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Prenom : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez votre prenom"
+                onChangeText={ajouterprenom}
+                value={prenom}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Email : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez votre Email"
+                onChangeText={ajouteremail}
+                value={email}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Numero de telephone : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez votre Numero de Telephone"
+                onChangeText={ajoutertel}
+                value={telephone}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Education : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez tes etudes"
+                onChangeText={ajoutereduc}
+                value={education}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Experience professionnel: </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez tes experience professionnel"
+                onChangeText={ajouterexp}
+                value={experience}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Competance : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez tes competances"
+                onChangeText={ajouterskil}
+                value={skills}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Compte Social : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez tes compte social"
+                onChangeText={ajoutersoc}
+                value={social}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>A propos de toi : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez une description sur toi"
+                onChangeText={ajouterdesc}
+                value={description}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Login : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez un psudoNom"
+                onChangeText={ajouterlog}
+                value={login}
+              />
+            </View>
+            <View style={styles.inputBox}>
+              <Text style={styles.inputLabel}>Mot de passe : </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez un mot de passe"
+                onChangeText={ajouterpass}
+                value={password}
+              />
+            </View>
+            <TouchableOpacity style={styles.registerButton} onPress={Enregistrer}>
+              <Text style={styles.loginButtonText}>Register</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.loginButton} onPress={()=> navigation.replace('Login')}>
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  bigCircle: {
+    width: Dimensions.get('window').height * 0.7,
+    height: Dimensions.get('window').height * 0.7,
+    backgroundColor: '#ff6b81',
+    borderRadius: 1000,
+    position: 'absolute',
+    right: Dimensions.get('window').width * 0.25,
+    top: -50,
+  },
+  smallCircle: {
+    width: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.4,
+    backgroundColor: '#ff7979',
+    borderRadius: 1000,
+    position: 'absolute',
+    bottom: Dimensions.get('window').width * -0.2,
+    right: Dimensions.get('window').width * -0.3,
+  },
+  centerizedView: {
+    width: '100%',
+    top: '15%',
+  },
+  authBox: {
+    width: '80%',
+    backgroundColor: '#fafafa',
+    borderRadius: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingBottom:250,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoBox: {
+    width: 140,
+    height: 100,
+    backgroundColor: '#eb4d4b',
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -50,
+    marginBottom: -50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  loginTitleText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  hr: {
+    width: '100%',
+    height: 0.5,
+    backgroundColor: '#444',
+    marginTop: 6,
+  },
+  inputBox: {
+    marginTop: 10,
+  },
+  inputLabel: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#dfe4ea',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+  },
+  loginButton: {
+    backgroundColor: '#ff4757',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+  },
+  registerButton: {
+    backgroundColor: '#1E87FE',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  forgotPasswordText: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 16,
+  },
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:8000/api/useer?nom=good&prenom=alors&telephone=+21654789478&education=aqwx&experience=sxzqdsx&skills=aaa&social=twitter&email=aa@hh.dd&login=sdq&password=ddd&description=dvd
